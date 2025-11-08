@@ -1,0 +1,25 @@
+# --- Python virtual environment ---
+.venv/
+env/
+venv/
+
+# --- Python cache & temp files ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.log
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- System files ---
+.DS_Store
+Thumbs.db
+
+# --- Data files (optional, if very large) ---
+Raw_Data_Kaggle/*.csv
+
+# --- Credentials (if any) ---
+*.env
