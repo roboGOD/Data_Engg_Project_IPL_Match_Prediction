@@ -1,0 +1,17 @@
+# Requirements for IPL Match Prediction project
+# Inferred from imports in project files and notebook
+# You can adjust version pins as needed for your environment
+
+pandas>=1.3
+numpy>=1.21
+scikit-learn>=1.0
+xgboost>=1.7
+joblib>=1.1
+matplotlib>=3.4
+seaborn>=0.11
+pyspark>=3.1
+kagglehub>=0.1
+google-cloud-pubsub>=2.10
+google-cloud-bigquery>=3.0
+python-dotenv>=0.21
+nbrstripout>=0.5
