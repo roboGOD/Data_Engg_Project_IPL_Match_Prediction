@@ -8,7 +8,7 @@ gcloud functions deploy match_data_consumer \
   --trigger-topic match_data \
   --entry-point pubsub_consumer \
   --region asia-south1 \
-  --source . \
+  --source ./pubsub_consumer \
   --memory 256MB \
   --timeout 60s \
   --cpu 1 \

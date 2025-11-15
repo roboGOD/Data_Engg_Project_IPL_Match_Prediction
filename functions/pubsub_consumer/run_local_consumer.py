@@ -20,7 +20,7 @@ import json
 import os
 import sys
 
-from cloud_functions.pubsub_consumer.main import pubsub_consumer
+from main import pubsub_consumer
 
 
 class FakeContext:
