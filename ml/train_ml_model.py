@@ -304,7 +304,7 @@ print(f"AUC: {xgb_auc:.4f}")
 print(classification_report(y_test, y_pred_xgb))
 
 # Save the XGBoost model
-joblib.dump(xgb_model, "xgb_model.pkl")
+joblib.dump(xgb_model, "../models/xgb_model.pkl")
 
 
 ########################################################################################################################
@@ -314,7 +314,7 @@ joblib.dump(xgb_model, "xgb_model.pkl")
 
 # Load the final model
 
-final_model = joblib.load("xgb_model.pkl")
+final_model = joblib.load("../models/xgb_model.pkl")
 
 # Confusion Matrix
 
