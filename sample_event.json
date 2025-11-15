@@ -1,0 +1,11 @@
+{
+  "eventType": "match",
+  "payload": {
+    "id": 12345,
+    "season": 2020,
+    "team1": "Team A",
+    "team2": "Team B",
+    "venue": "Some Stadium",
+    "date": "2020-09-20"
+  }
+}
