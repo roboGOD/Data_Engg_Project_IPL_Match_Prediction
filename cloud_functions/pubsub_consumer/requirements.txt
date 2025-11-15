@@ -1,0 +1,3 @@
+google-cloud-pubsub>=2.10
+google-cloud-bigquery>=3.0
+python-dotenv>=0.21

@@ -13,13 +13,13 @@ Cloud Function handler in `consumer.py`.
 2. Run the local runner:
 
 ```bash
-python3 run_local.py --file sample_event.json
+python3 run_local_consumer.py --file sample_event.json
 ```
 
 Alternatively you can pass inline JSON:
 
 ```bash
-python3 run_local.py --json '{"eventType":"deliveries","payload":{...}}'
+python3 run_local_consumer.py --json '{"eventType":"deliveries","payload":{...}}'
 ```
 
 Notes:
