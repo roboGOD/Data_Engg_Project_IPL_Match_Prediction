@@ -1,7 +1,3 @@
-# Requirements for IPL Match Prediction project
-# Inferred from imports in project files and notebook
-# You can adjust version pins as needed for your environment
-
 pandas>=1.3
 numpy>=1.21
 scikit-learn>=1.0
