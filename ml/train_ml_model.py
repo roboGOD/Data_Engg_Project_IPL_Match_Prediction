@@ -13,8 +13,8 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 
 #importing data from the csv files
-matches_df = pd.read_csv('Raw_Data_Kaggle/matches.csv')
-deliveries_df = pd.read_csv('Raw_Data_Kaggle/deliveries.csv')
+matches_df = pd.read_csv('data/raw/matches.csv')
+deliveries_df = pd.read_csv('data/raw/deliveries.csv')
 
 print(matches_df.head())
 print(deliveries_df.head())

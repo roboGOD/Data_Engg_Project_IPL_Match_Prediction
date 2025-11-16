@@ -8,7 +8,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.pkl
+# *.pkl
 *.log
 
 # --- Jupyter ---
@@ -19,10 +19,11 @@ __pycache__/
 Thumbs.db
 
 # --- Data files (optional, if very large) ---
-data/raw/
-data/processed/
-models/
-Raw_Data_Kaggle/*.csv
+# Tracking with LFS
+# data/raw/
+# data/processed/
+# models/
+# Raw_Data_Kaggle/*.csv
 
 # --- Credentials (if any) ---
 *.env
