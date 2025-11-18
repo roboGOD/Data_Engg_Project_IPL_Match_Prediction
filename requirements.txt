@@ -10,4 +10,5 @@ kagglehub>=0.1
 google-cloud-pubsub>=2.10
 google-cloud-bigquery>=3.0
 python-dotenv>=0.21
-nbrstripout>=0.5
+pyspark>=3.5.1
+findspark>=2.0.1
