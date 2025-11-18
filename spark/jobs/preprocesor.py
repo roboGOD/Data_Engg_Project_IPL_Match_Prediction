@@ -16,6 +16,8 @@ PROJECT_ID = os.getenv("GCP_PROJECT", os.getenv("GOOGLE_CLOUD_PROJECT", "iisc-da
 DATASET_ID = os.getenv("BQ_DATASET", "ipl_analysis")
 MATCH_TABLE = os.getenv("MATCH_TABLE", "match_data")
 DELIVERIES_TABLE = os.getenv("DELIVERIES_TABLE", "deliveries_data")
+PROCESSED_DATA_TABLE_STAGING = os.getenv("DELIVERIES_TABLE", "processed_ipl_data_staging")
+PROCESSED_DATA_TABLE = os.getenv("DELIVERIES_TABLE", "processed_ipl_data")
 
 # Spark Session
 spark = SparkSession.builder \
@@ -40,6 +42,10 @@ deliveries = (
     .option("table", f"{PROJECT_ID}.{DATASET_ID}.{DELIVERIES_TABLE}")
     .load()
 )
+
+print("Loaded matches and deliveries data from BigQuery.")
+print(f"Matches count: {matches.count()}")
+print(f"Deliveries count: {deliveries.count()}")
 
 
 
@@ -180,12 +186,46 @@ for c in leakage_cols:
 
 # 6. SAVE CLEANED DATA
 
-
-output_path = "/content/drive/MyDrive/ipl_match_dataset/ipl_cleaned_for_sparkml.csv"
-final_df.write.csv(output_path, header=True, mode="overwrite")
-output_path = "/content/drive/MyDrive/ipl_cleaned_for_sparkml.parquet"
-final_df.write.mode("overwrite").parquet(output_path)
-print("Saved cleaned dataset to:", output_path)
+## Code to write data to local CSVs (for testing locally)
+## Uncomment below lines if writing to local files
+# output_path = "/content/drive/MyDrive/ipl_match_dataset/ipl_cleaned_for_sparkml.csv"
+# final_df.write.csv(output_path, header=True, mode="overwrite")
+# output_path = "/content/drive/MyDrive/ipl_cleaned_for_sparkml.parquet"
+# final_df.write.mode("overwrite").parquet(output_path)
+# print("Saved cleaned dataset to:", output_path)
 
 # Show preview
 final_df.show(20)
+
+# Write to BigQuery
+(
+    final_df.write.format("bigquery")
+    .option("table", f"{PROJECT_ID}.{DATASET_ID}.{PROCESSED_DATA_TABLE_STAGING}")
+    .mode("append")
+    .save()
+)
+
+print(f"Saved cleaned dataset to BigQuery table: {PROCESSED_DATA_TABLE_STAGING}")
+
+# Run BigQuery MERGE to upsert from staging to main table
+print("Starting BigQuery MERGE to upsert data...")
+merge_query = f"""
+MERGE `{PROJECT_ID}.{DATASET_ID}.{PROCESSED_DATA_TABLE}` T
+USING `{PROJECT_ID}.{DATASET_ID}.{PROCESSED_DATA_TABLE_STAGING}` S
+ON T.match_id = S.match_id AND T.inning = S.inning AND T.over = S.over AND T.ball = S.ball
+WHEN MATCHED THEN
+  UPDATE SET *
+WHEN NOT MATCHED THEN
+  INSERT *
+"""
+query_job = client.query(merge_query)
+query_job.result()  # Wait for completion
+print("BigQuery MERGE completed successfully.")
+print(f"Upserted data into BigQuery table: {PROCESSED_DATA_TABLE}")
+
+# Clean up staging table after merge
+cleanup_query = f"TRUNCATE TABLE `{PROJECT_ID}.{DATASET_ID}.{PROCESSED_DATA_TABLE_STAGING}`"
+cleanup_job = client.query(cleanup_query)
+cleanup_job.result()  # Wait for completion
+print(f"Cleaned up staging table: {PROCESSED_DATA_TABLE_STAGING}")
+
