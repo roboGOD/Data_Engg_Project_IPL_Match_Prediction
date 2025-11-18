@@ -201,6 +201,8 @@ final_df.show(20)
 (
     final_df.write.format("bigquery")
     .option("table", f"{PROJECT_ID}.{DATASET_ID}.{PROCESSED_DATA_TABLE_STAGING}")
+    .option("writeMethod", "direct")
+    .option("writeAtLeastOnce", "true")
     .mode("append")
     .save()
 )

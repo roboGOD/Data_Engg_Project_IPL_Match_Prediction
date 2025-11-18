@@ -12,7 +12,7 @@ from sklearn.metrics import roc_curve, auc
 import pickle
  
 # Define the file path
-FILE_PATH = 'data/raw/ipl_cleaned.csv'
+FILE_PATH = 'data/processed/ipl_cleaned.csv'
  
 ############################################################################################################################
  
