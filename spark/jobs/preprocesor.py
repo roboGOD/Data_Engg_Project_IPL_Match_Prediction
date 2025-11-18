@@ -211,14 +211,28 @@ print(f"Saved cleaned dataset to BigQuery table: {PROCESSED_DATA_TABLE_STAGING}"
 
 # Run BigQuery MERGE to upsert from staging to main table
 print("Starting BigQuery MERGE to upsert data...")
+
+def q(col):
+    return f"`{col}`"
+
+table = client.get_table(f"{PROJECT_ID}.{DATASET_ID}.{PROCESSED_DATA_TABLE}")
+cols = [schema.name for schema in table.schema]
+update_clause = ", ".join([f"T.{q(c)} = S.{q(c)}" for c in cols])
+insert_columns = ", ".join([q(c) for c in cols])
+insert_values = ", ".join([f"S.{q(c)}" for c in cols])
+
 merge_query = f"""
 MERGE `{PROJECT_ID}.{DATASET_ID}.{PROCESSED_DATA_TABLE}` T
 USING `{PROJECT_ID}.{DATASET_ID}.{PROCESSED_DATA_TABLE_STAGING}` S
-ON T.match_id = S.match_id AND T.inning = S.inning AND T.over = S.over AND T.ball = S.ball
+ON T.match_id = S.match_id
+   AND T.inning = S.inning
+   AND T.`over` = S.`over`
+   AND T.ball = S.ball
 WHEN MATCHED THEN
-  UPDATE SET *
+  UPDATE SET {update_clause}
 WHEN NOT MATCHED THEN
-  INSERT *
+  INSERT ({insert_columns})
+  VALUES ({insert_values})
 """
 query_job = client.query(merge_query)
 query_job.result()  # Wait for completion
