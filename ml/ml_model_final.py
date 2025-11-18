@@ -10,19 +10,29 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import roc_curve, auc
 import pickle
- 
-# Define the file path
-FILE_PATH = 'data/processed/ipl_cleaned.csv'
- 
+from google.cloud import bigquery
+from google.cloud import storage
+import joblib
+
+
 ############################################################################################################################
  
 #1. Data Loading and Initial Cleaning
-try:
-    df = pd.read_csv(FILE_PATH, low_memory=False)
-    print(f"Data loaded successfully. Shape: {df.shape}")
-except FileNotFoundError:
-    print(f"Error: File not found at {FILE_PATH}")
-    raise
+# Big Query Client
+client = bigquery.Client()
+df = client.query("""
+    SELECT * FROM `iisc-data-engineering-project.ipl_analysis.processed_ipl_data`
+""").to_dataframe()
+print(f"Data loaded from BigQuery. Shape: {df.shape}")
+
+# Local CSV Loading for development/testing
+# Uncomment below lines to read from local CSV file
+# try:
+#     df = pd.read_csv(FILE_PATH, low_memory=False)
+#     print(f"Data loaded successfully. Shape: {df.shape}")
+# except FileNotFoundError:
+#     print(f"Error: File not found at {FILE_PATH}")
+#     raise
  
 #Dropping unnecessary columns
 COLUMNS_TO_DROP = [
@@ -277,16 +287,22 @@ ENCODER_PATH = 'models/ipl_winner_label_encoder.pkl'
 
 print(f"\nSaving Trained Model and LabelEncoder")
 
+storageClient = storage.Client()
+bucket = storageClient.bucket('ipl-data-models')
+blob = bucket.blob("models/ipl_winner_xgb_powerplay_model.pkl")
+
 try:
     # Save the entire pipeline (including preprocessing steps)
-    with open(MODEL_PATH, 'wb') as file:
-        pickle.dump(full_pipeline, file)
+    joblib.dump(full_pipeline, MODEL_PATH)
     print(f"Trained Pipeline saved successfully to {MODEL_PATH}")
 
+    blob.upload_from_filename(MODEL_PATH)
+    print(f"Trained Pipeline uploaded successfully to GCS at models/ipl_winner_xgb_powerplay_model.pkl")
+
     # Save the LabelEncoder (CRITICAL for decoding future predictions)
-    with open(ENCODER_PATH, 'wb') as file:
-        pickle.dump(le, file)
-    print(f"LabelEncoder saved successfully to {ENCODER_PATH}")
+    # with open(ENCODER_PATH, 'wb') as file:
+    #     pickle.dump(le, file)
+    # print(f"LabelEncoder saved successfully to {ENCODER_PATH}")
 
 except Exception as e:
     print(f"An error occurred while saving files: {e}")

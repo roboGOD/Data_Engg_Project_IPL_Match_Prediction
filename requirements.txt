@@ -12,3 +12,7 @@ google-cloud-bigquery>=3.0
 python-dotenv>=0.21
 pyspark>=3.5.1
 findspark>=2.0.1
+db_dtypes>=1.4.4
+google-cloud-storage>=3.6.0
+google-cloud-bigquery-storage>=2.34
+
