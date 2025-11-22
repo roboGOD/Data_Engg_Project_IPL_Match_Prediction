@@ -15,6 +15,10 @@ import os
 import base64
 import json
 from google.cloud import bigquery
+from google.cloud import storage
+from feature_generator import generate_features, clean_match_record, clean_delivery_record, merge_match_delivery
+import pandas as pd
+import joblib
 
 # Configuration via environment variables (set these in Cloud Functions env)
 PROJECT_ID = os.getenv("GCP_PROJECT", os.getenv("GOOGLE_CLOUD_PROJECT", "iisc-data-engineering-project"))
@@ -33,6 +37,56 @@ def _get_table_ref(event_type: str):
     if event_type == "match":
         return bq_client.dataset(DATASET_ID).table(MATCH_TABLE)
     raise ValueError(f"Unknown eventType: {event_type}")
+
+def download_model_from_gcs(bucket_name: str, source_blob_name: str, destination_file_name: str):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+    blob.download_to_filename(destination_file_name)
+
+    print(
+        f"Blob {source_blob_name} downloaded to {destination_file_name}."
+    )
+
+    return joblib.load(destination_file_name)
+
+def predict_winner(pipeline, match_data, delivery_data):
+    match_df = clean_match_record(match_data)
+    delivery_df = clean_delivery_record(delivery_data)
+    merged_df = merge_match_delivery(match_df, delivery_df)
+    features_df = generate_features(merged_df)
+    prediction = pipeline.predict(features_df)
+    print(f"Prediction: {prediction[0]}")
+    return int(prediction[0])
+
+# Fetch match data from BigQuery for given delivery
+def fetch_match_for_delivery(delivery: dict) -> dict:
+    match_id = delivery.get("match_id")
+    if match_id is None:
+        raise ValueError("Delivery record missing 'match_id' field")
+
+    query = f"""
+        SELECT *
+        FROM `{PROJECT_ID}.{DATASET_ID}.{MATCH_TABLE}`
+        WHERE id = @match_id
+        LIMIT 1
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("match_id", "STRING", match_id)
+        ]
+    )
+
+    query_job = bq_client.query(query, job_config=job_config)
+    results = query_job.result()
+    match_records = [dict(row) for row in results]
+
+    if not match_records:
+        raise ValueError(f"No match record found for match_id: {match_id}")
+    
+    print (f"\n\nFetched match record for match_id {match_id}: {match_records[0]}")
+
+    return match_records[0]
 
 
 def pubsub_consumer(event, context):
@@ -65,6 +119,17 @@ def pubsub_consumer(event, context):
         payload = msg.get("payload")
         if payload is None:
             raise ValueError("Missing 'payload' in message")
+        
+        if event_type == "deliveries":
+            match_data = fetch_match_for_delivery(payload)
+            pipeline = download_model_from_gcs(
+                bucket_name="ipl-data-models",
+                source_blob_name="models/ipl_winner_xgb_powerplay_model.pkl",
+                destination_file_name="/tmp/ipl_winner_xgb_powerplay_model.pkl"
+            )
+            predicted_winner = predict_winner(pipeline, match_data, payload)
+            payload["predicted_winner"] = predicted_winner
+            print (f"\n\nUpdated delivery payload with prediction: {payload}")
 
         # Insert into BigQuery
         errors = bq_client.insert_rows_json(table_ref, [payload])

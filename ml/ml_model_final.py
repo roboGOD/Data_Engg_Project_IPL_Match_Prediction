@@ -9,7 +9,6 @@ from sklearn.metrics import accuracy_score, roc_auc_score, classification_report
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import roc_curve, auc
-import pickle
 from google.cloud import bigquery
 from google.cloud import storage
 import joblib

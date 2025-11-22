@@ -1,0 +1,22 @@
+{
+  "eventType": "deliveries",
+  "payload": {
+    "match_id": "1136582",
+    "inning": 1,
+    "batting_team": "Kings XI Punjab",
+    "bowling_team": "Delhi Daredevils",
+    "over": 5,
+    "ball": 5,
+    "batter": "MA Agarwal",
+    "bowler": "Avesh Khan",
+    "non_striker": "KK Nair",
+    "batsman_runs": 2,
+    "extra_runs": 0,
+    "total_runs": 2,
+    "extras_type": "",
+    "is_wicket": 0,
+    "player_dismissed": "NA",
+    "dismissal_kind": "NA",
+    "fielder": "NA"
+  }
+}
