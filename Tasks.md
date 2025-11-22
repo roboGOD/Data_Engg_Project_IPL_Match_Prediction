@@ -1,3 +1,12 @@
+
+# Object Storage - Use of GCS to store models
+# Streaming - Use of Google Pub/Sub for incoming data
+# Warehouse - BigQuery to store the data
+# Google Cloud Function - To run the consumer (always active)
+# Spark - To preprocess data
+# ML pipeline - Model training
+
+
 # Pending Tasks
 ~~1. Read the data from BigQuery table for preprocessing Spark job~~
 ~~2. Finalize what features we need to generate for data preprocessing~~
